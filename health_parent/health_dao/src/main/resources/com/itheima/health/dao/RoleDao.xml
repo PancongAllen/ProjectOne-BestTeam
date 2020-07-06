@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itheima.health.dao.RoleDao">
+    <select id="getMenuByRoleIds" parameterType="int" resultMap="xpl_map">
+        select m1.id,m1.name,m1.path,m1.icon,m1.priority,
+        m2.id tid,m2.name tname,m2.path tpath,m2.linkUrl tlinkUrl,m2.priority tpriority
+        from t_role_menu rm ,t_menu m1 ,t_menu m2
+        where rm.role_id = #{rid}
+        and rm.menu_id =m1.id
+        and m1.id = m2.parentMenuId
+        ORDER BY m1.priority,m2.priority
+    </select>
+    <resultMap id="xpl_map" type="menu">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="path" property="path"/>
+        <result column="icon" property="icon"/>
+        <collection property="children" ofType="menu">
+            <id column="tid" property="id"/>
+            <result column="tname" property="name"/>
+            <result column="tpath" property="path"/>
+            <result column="tlinkUrl" property="linkUrl"/>
+        </collection>
+    </resultMap>
+</mapper>
