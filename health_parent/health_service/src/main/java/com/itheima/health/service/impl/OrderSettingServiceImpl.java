@@ -72,4 +72,13 @@ public class OrderSettingServiceImpl implements OrderSettingService {
             orderSettingDao.add(orderSetting);
         }
     }
+
+    /**
+     * 获取每个月最后1天，来删除之前的全部预约数据
+     * @param lastDateOfMouth
+     */
+    @Override
+    public void deleteByDate(String lastDateOfMouth) {
+        orderSettingDao.deleteByDate(lastDateOfMouth);
+    }
 }
