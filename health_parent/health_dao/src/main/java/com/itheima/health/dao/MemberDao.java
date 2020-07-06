@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.itheima.health.pojo.Member;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MemberDao {
     List<Member> findAll();
@@ -17,4 +18,9 @@ public interface MemberDao {
     Integer findMemberCountByDate(String date);
     Integer findMemberCountAfterDate(String date);
     Integer findMemberTotalCount();
+    List<Map<String,String>> countBySex();
+    int findByAge_0();
+    int findByAge_1();
+    int findByAge_2();
+    int findByAge_3();
 }

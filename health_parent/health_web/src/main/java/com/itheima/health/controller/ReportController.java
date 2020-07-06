@@ -238,4 +238,22 @@ public class ReportController {
         }
         return new Result(false,"导出运营数据统计pdf失败");
     }
+
+    /**
+     * 按性别获取会员比例
+     */
+    @RequestMapping("/getMemberReportBySex")
+    public Result getMemberReportBySex(){
+        Map<String, Object> resultMap = memberService.getMemberReportBySex();
+        return new Result(true,"获取数据成功",resultMap);
+    }
+
+    /**
+     * 根据年龄段获取会员比例
+     */
+    @RequestMapping("/getMemberReportByAge")
+    public Result getMemberReportByAge(){
+        Map<String, Object> resultMap = memberService.getMemberReportByAge();
+        return new Result(true,"获取数据成功",resultMap);
+    }
 }
