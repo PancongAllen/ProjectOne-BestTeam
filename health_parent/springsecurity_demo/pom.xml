@@ -33,7 +33,7 @@
                 <version>2.2</version>
                 <configuration>
                     <path>/</path>
-                    <port>88</port>
+                    <port>8084</port>
                     <uriEncoding>utf-8</uriEncoding>
                 </configuration>
             </plugin>
