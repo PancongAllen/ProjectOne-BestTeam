@@ -2,6 +2,9 @@ package com.itheima.health.service;
 
 import com.itheima.health.pojo.User;
 
+import java.util.LinkedHashSet;
+import java.util.Map;
+
 /**
  * Description: 用户服务(企业员工)
  * User: Eric
@@ -13,4 +16,18 @@ public interface UserService {
      * @return
      */
     User findByUsername(String username);
+
+
+
+
+    //========================= xpl start ===========================//
+
+    //动态获取菜单
+    LinkedHashSet<Map<String, Object>> getMenusByUser(String username);
+
+    //========================= xpl end =============================//
+
+
+
+
 }
