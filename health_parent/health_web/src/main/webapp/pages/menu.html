@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- 页面meta -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>传智健康</title>
+        <meta name="description" content="传智健康">
+        <meta name="keywords" content="传智健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <!-- 引入样式 -->
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/style.css">
+        <!-- 引入组件库 -->
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script src="../js/vue.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+        <script src="../js/axios-0.18.0.js"></script>
+        <style>
+            .datatable {
+                position: relative;
+                box-sizing: border-box;
+                -webkit-box-flex: 1;
+                width: 100%;
+                max-width: 100%;
+                font-size: 14px;
+                color: rgb(96, 98, 102);
+                overflow: hidden;
+                flex: 1 1 0%;
+            }
+            .datatable td, .datatable th {
+                padding: 12px 0;
+                min-width: 0;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                vertical-align: middle;
+                position: relative;
+                text-align: left;
+            }
+
+
+            /*树形结构样式*/
+            .tree-dom {
+                background: white;
+                margin-bottom: 16px;
+                padding: 24px 24px;
+            }
+
+            .one-list {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 30px;
+                box-sizing: border-box;
+            }
+        </style>
+    </head>
+    <body class="hold-transition">
+        <div id="app">
+            <div class="content-header">
+                <h1>系统设置<small>菜单管理</small></h1>
+                <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+                    <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                    <el-breadcrumb-item>系统设置</el-breadcrumb-item>
+                    <el-breadcrumb-item>菜单管理</el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
+            <div class="app-container">
+                <div class="box">
+                    <div class="filter-container">
+                        <el-button type="primary" class="butT" @click="handleCreate()">新增一级菜单</el-button>
+                    </div>
+                    <el-row>
+                        <el-col :span="4"><div class="grid-content bg-purple" ></div>序号</el-col>
+                        <el-col :span="12"><div class="grid-content bg-purple-light">一级菜单</div></el-col>
+                        <el-col :span="8"><div class="grid-content bg-purple"></div>操作</el-col>
+                    </el-row>
+
+
+                    <!--                树形结构-->
+                    <div class="tree-dom">
+                        <el-collapse accordion>
+                            <el-collapse-item v-for="(one,oneIndex) in oneList" :key="oneIndex"
+                                              @click.native="getTwoList(one.id)">
+                                <template slot="title">
+                                    <div class="one-list">
+                                        <div>{{one.id}}</div>
+                                        <div>{{one.name}}</div>
+                                        <div>
+                                            <el-button type="primary" plain @click.stop="handleAdd(one)">添加子类</el-button>
+                                            <el-button type="success" @click.stop="handleReName(one)">重命名</el-button>
+                                            <el-button type="danger" @click.stop="handledelete(one)">删除</el-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div v-for="(two,twoIndex) in twoList" :key="twoIndex">
+                                    <div class="one-list">
+                                        <div>{{two.id}}</div>
+                                        <div>|---{{two.name}}</div>
+                                        <div>
+                                            <el-button type="success" @click.stop="handleReNameChild(two)">重命名</el-button>
+                                            <el-button type="danger" @click.stop="handledelete(two)">删除</el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-collapse-item>
+                        </el-collapse>
+                    </div>
+
+                    <div class="pagination-container">
+                        <el-pagination
+                            class="pagiantion"
+                            @current-change="handleCurrentChange"
+                            :current-page="pagination.currentPage"
+                            :page-size="pagination.pageSize"
+                            layout="total, prev, pager, next, jumper"
+                            :total="pagination.total">
+                        </el-pagination>
+                    </div>
+                    <!-- 新增标签弹层 -->
+                </div>
+            </div>
+        </div>
+    <script>
+        var vue = new Vue({
+            el: '#app',
+            data:{
+                activeName:'first',//添加/编辑窗口Tab标签名称
+                pagination: {//分页相关属性
+                    currentPage: 1,
+                    pageSize:10,
+                    total:0,
+                    queryString:null,
+                },
+                dataList: [],//列表数据
+                formData: {},//表单数据
+                tableData:[],//新增和编辑表单中对应的检查项列表数据
+                checkitemIds:[],//新增和编辑表单中检查项对应的复选框，基于双向绑定可以进行回显和数据提交
+                dialogFormVisible: false,//控制添加窗口显示/隐藏
+                dialogFormVisible4Edit:false,//控制编辑窗口显示/隐藏
+                oneList:[{"categoryId":1,"categoryName":"1"},{"categoryId":2,"categoryName":"2"},{"categoryId":3,"categoryName":"3"}],//一级菜单
+                twoList:[],//二级菜单
+            },
+            created() {
+                this.getONneList();
+            },
+            methods: {
+
+                //切换页码
+                handleCurrentChange(currentPage) {
+                    this.pagination.currentPage = currentPage;
+                    this.findPage();
+                },
+                // 删除
+                handleDelete(row) {
+                    // 获取删除的id
+                    var id = row.id;
+                    //alert(JSON.stringify(row));
+                    this.$confirm('此操作将【永久删除】该检查组, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        // 点击确定后调用
+                        axios.post('/checkgroup/deleteById.do?id=' + id).then(res=>{
+                            this.$message({
+                                message: res.data.message,
+                                type: res.data.flag?"success":"error"
+                            })
+                            if(res.data.flag){
+                                // 成功
+                                // 刷新列表数据
+                                this.findPage();
+                            }
+                        })
+                    }).catch(() => {
+                        // 点击取消后调用
+                        // 空着，防止报错
+                    });
+                },
+
+                //树形结构方法
+                handleNodeClick(data) {
+
+                },
+                //根据一级菜单id 获取二级菜单
+                getTwoList(categoryParentId) {
+                    //alert(categoryParentId);
+                    axios.get("/menu/find2menu.do?categoryParentId=" + categoryParentId)
+                        .then(res => {
+                        this.twoList = res.data.data;
+                    }).catch(err => {
+                        this.$message.error(err.message)
+                    })
+                },
+                //分页查询
+                getONneList() {
+                    axios.post("/menu/findPage.do",this.pagination).then(res => {
+                        if(res.data.flag){
+                            this.oneList = res.data.data.rows;
+                            this.pagination.total = res.data.data.total;
+                        } else{
+                            this.$message.error(res.data.message);
+                        }
+                    });
+                },
+
+                // 弹出添加窗口
+                handleCreate() {
+                    this.$prompt('添加一级菜单', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputPlaceholder: '请输入菜单名字',
+                        inputValidator: (value) => {
+                            if (value == null) {
+                                return '不能为空！'
+                            }
+                        },
+                    }).then(({value}) => {
+                        axios.post("/menu/add.do?name="+value)
+                            .then(res => {
+                            this.getONneList(); //页面刷新没生效??
+                        }).catch(err => {
+                            this.$message.error(err.message)
+                        })
+                    })
+                },
+                handleAdd(one) {
+                    this.$prompt('为'+'“'+one.name+'”'+'添加子菜单','添加子菜单', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputPlaceholder: '请输入子类名字',
+                        inputValidator: (value) => {
+                            if (value == null) {
+                                return '不能为空！'
+                            }
+                        },
+                    }).then(({value}) => {
+                        axios.post("/menu/add2.do?categoryId="+one.id+"&categoryName="+value)
+                            .then(res => {
+                            this.getONneList(); //页面刷新没生效??
+                        }).catch(err => {
+                            this.$message.error(err.message)
+                        })
+                    })
+                },
+                handleReName(one) {
+                    this.$prompt('“'+one.name+'”重命名为：','重命名', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputPlaceholder: '请输入',
+                        inputValidator: (value) => {
+                            if (value == null) {
+                                return '不能为空！'
+                            }
+                        },
+                    }).then(({value}) => {
+                        axios.post("/menu/reName1.do?categoryId="+one.id+"&categoryName="+value).then(res => {
+                            this.getONneList(); //页面刷新没生效??
+                        }).catch(err => {
+                            this.$message.error(err.message)
+                        })
+                    })
+                },
+                handleReNameChild(two) {
+                    this.$prompt('“'+two.name+'”重命名为：','重命名', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputPlaceholder: '请输入',
+                        inputValidator: (value) => {
+                            if (value == null) {
+                                return '不能为空！'
+                            }
+                        },
+                    }).then(({value}) => {
+                        axios.post("/menu/reName1.do?categoryId="+two.id+"&categoryName="+value).then(res => {
+                            this.getONneList();
+                        }).catch(err => {
+                            this.$message.error(err.message)
+                        })
+                    })
+                },
+                handledelete(val) {
+                    // 获取删除的id
+                    let id = val.id;
+                    let level = val.level;
+                    //alert(JSON.stringify(row));
+                    this.$confirm('此操作将【永久删除】该菜单, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        // 点击确定后调用
+                        axios.post('/menu/deleteById.do?id=' + id+"&level="+level).then(res=>{
+                            this.$message({
+                                message: res.data.message,
+                                type: res.data.flag?"success":"error"
+                            })
+                            if(res.data.flag){
+                                // 成功
+                                // 刷新列表数据
+                                this.getONneList();
+                            }
+                        })
+                    }).catch(() => {
+                        // 点击取消后调用
+                        // 空着，防止报错
+                    });
+                    /*axios.post('/manage/category/1.0/edit', {
+                        categoryId:one.id,
+                        categoryIsDel: 1, //删除
+                        // categoryName: val.categoryName,
+                    }, {
+                        headers: {"x-auth-token": this.getToken()}
+                    }).then(res => {
+                        this.getONneList()
+                    }).catch(err => {
+                        this.$message.error(err.message)
+                    })*/
+                },
+                /*handledeleteChild(val) {
+                    // 获取删除的id
+                    let id = val.id;
+                    //alert(JSON.stringify(row));
+                    this.$confirm('此操作将【永久删除】该菜单, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        // 点击确定后调用
+                        axios.post('/menu/deleteById.do?id=' + id).then(res=>{
+                            this.$message({
+                                message: res.data.message,
+                                type: res.data.flag?"success":"error"
+                            })
+                            if(res.data.flag){
+                                // 成功
+                                // 刷新列表数据
+                                this.getONneList();
+                            }
+                        })
+                    }).catch(() => {
+                        // 点击取消后调用
+                        // 空着，防止报错
+                    });
+                },*/
+            }
+        })
+    </script>
+    </body>
+</html>

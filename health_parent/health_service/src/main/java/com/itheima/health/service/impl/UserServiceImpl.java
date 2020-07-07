@@ -1,12 +1,20 @@
 package com.itheima.health.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.itheima.health.constant.MessageConstant;
 import com.itheima.health.dao.RoleDao;
 import com.itheima.health.dao.UserDao;
+import com.itheima.health.entity.PageResult;
+import com.itheima.health.entity.QueryPageBean;
+import com.itheima.health.exception.PermissionException;
 import com.itheima.health.pojo.Menu;
+import com.itheima.health.pojo.Role;
 import com.itheima.health.pojo.User;
 import com.itheima.health.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -86,4 +94,79 @@ public class UserServiceImpl implements UserService {
         }
         return set;
     }
+
+
+    @Override
+    public List<Role> findAll() {
+        return roleDao.findAll();
+    }
+
+    @Override
+    public void add(User user,Integer[] roleIds) {
+        user.setStation("1");
+        userDao.add(user);
+        int id = user.getId();
+        //用户-角色
+        setRoleAndUser(id,roleIds);
+    }
+    //用户-角色
+    private void setRoleAndUser(Integer id, Integer[] roleIds) {
+        if(roleIds !=null && roleIds.length>0 ){
+            for (Integer rid : roleIds) {
+                //使用map来封装中间表的数据
+                Map<String,Integer> map = new HashMap();
+                map.put("rid",rid);
+                map.put("id",id);
+                userDao.setRoleAndUser(map);
+            }
+        }
+    }
+
+    @Override
+    public User findById(int id) {
+        return userDao.selectByPrimaryKey(id);
+    }
+    @Override
+    public void update(User user,Integer[] roleId) {
+        userDao.updateByPrimaryKeySelective(user);
+        Integer id = user.getId();
+        //删除原关系表数据
+        userDao.deleteRoleAndUser(id);
+        //往中间表插入数据
+        setRoleAndUser(id,roleId);
+    }
+
+
+    @Override
+    public PageResult<User> findPage(QueryPageBean queryPageBean) {
+        PageHelper.startPage(queryPageBean.getCurrentPage(),queryPageBean.getPageSize());
+        Page<User> page = userDao.findPage(queryPageBean.getQueryString());
+        return new PageResult(page.getTotal(),page.getResult());
+    }
+
+
+    @Override
+    public void deleteById(int id) {
+        // 根据角色id 删除角色和用户中间表
+        userDao.deleteRoleAndUser(id);
+        userDao.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<Integer> findRoleByUserId(int id) {
+        List<Integer> list = userDao.findRoleByUserId(id);
+        return list;
+    }
+
+    @Override
+    public User checkUsername(String username) {
+        return userDao.checkUsername(username);
+    }
+
+    @Override
+    public void EditPassword(Integer pid, String encode) {
+        userDao.EditPassword(pid,encode);
+    }
+
+
 }

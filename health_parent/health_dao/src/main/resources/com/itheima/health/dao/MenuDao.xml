@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.health.dao.MenuDao">
+
+
+    <update id="update" parameterType="com.itheima.health.pojo.Menu">
+        UPDATE t_menu
+        SET
+            name=#{name},
+            linkUrl=#{linkUrl},
+            path=#{path},
+            priority=#{priority},
+            description=#{description},
+            icon=#{icon}
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM t_menu WHERE id=#{id}
+    </delete>
+
+    <select id="findByCondition2" resultType="com.itheima.health.pojo.Menu">
+        select * From t_menu
+        <if test="_parameter !=null and _parameter.length > 0">
+        where name like #{queryString}
+        </if>
+    </select>
+
+    <select id="findCountByPermissionId" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM t_role_menu WHERE menu_id = #{id};
+    </select>
+
+    <select id="findById" resultType="com.itheima.health.pojo.Menu">
+        SELECT * FROM t_menu WHERE id = #{id}
+    </select>
+
+
+
+
+
+    <!--条件查询-->
+    <select id="findPage" parameterType="string" resultType="com.itheima.health.pojo.Menu">
+        select * from t_menu where t_menu.level = 1
+        <if test="value != null and value.length > 0">
+            and  name like concat('%',#{trim(value)},'%')
+        </if>
+    </select>
+
+    <select id="find2menu" parameterType="int" resultType="com.itheima.health.pojo.Menu">
+        select t2.* from t_menu t1,t_menu t2
+        where t1.id = #{categoryParentId} and t1.id = t2.parentMenuId
+
+    </select>
+
+    <update id="reName1" >
+        update t_menu set name=#{cname} where id=#{cid}
+    </update>
+
+    <insert id="add" parameterType="com.itheima.health.pojo.Menu">
+        INSERT INTO t_menu(name,linkUrl,path,priority,level,icon,parentMenuId)
+        VALUES (#{name},#{linkUrl},#{path},#{priority},#{level},#{icon},#{parentMenuId})
+    </insert>
+
+
+    <!--ccccccccccccccccccccccc-->
+
+    <select id="findAll" resultMap="findAll_map">
+        select t1.id,t1.name,t2.id tid,t2.name tname
+        from (select * from t_menu where level =1) t1 left join t_menu t2
+        on t1.level =1 and t1.id = t2.parentMenuId
+    </select>
+    <resultMap id="findAll_map" type="com.itheima.health.pojo.Menu">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="children" ofType="com.itheima.health.pojo.Menu">
+            <id property="id" column="tid"/>
+            <result column="tname" property="name"/>
+        </collection>
+    </resultMap>
+
+
+
+
+</mapper>

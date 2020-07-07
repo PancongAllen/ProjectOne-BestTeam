@@ -71,4 +71,30 @@ public interface MessageConstant {
     static final String GET_BUSINESS_REPORT_FAIL = "获取运营统计数据失败";
     static final String GET_SETMEAL_LIST_SUCCESS = "查询套餐列表数据成功";
     static final String GET_SETMEAL_LIST_FAIL = "查询套餐列表数据失败";
+
+    static final String GET_AUTHORITY_LIST_SUCCESS = "查询权限列表数据成功";
+    String ADD_PERMISSION_SUCCESS = "新增权限成功";
+    String DELETE_PERMISSION_SUCCESS = "删除权限成功";
+    String QUERY_PERMISSION_SUCCESS = "查询权限成功";
+    String UPDATE_PERMISSION_SUCCESS = "更新权限成功";
+    String PERMISSION_IN_USE = "PERMISSION_IN_USE";
+
+    String QUERY_ROLE_LIST_SUCCESS = "查询群组列表数据成功";
+    String ADD_ROLE_SUCCESS = "新增群组成功";
+    String DELETE_ROLE_SUCCESS = "删除群组成功";
+    String QUERY_ROLE_SUCCESS = "查询群组成功";
+    String UPDATE_ROLE_SUCCESS = "更新群组成功";
+    String ROLE_IN_USE = "群组已被其他用户使用";
+
+
+    String QUERY_MENU_LIST_SUCCESS = "查询菜单成功";
+    String ADD_MENU_SUCCESS = "增加菜单成功";
+    String DELETE_MENU_BY_ID_SUCCESS = "通过ID删除菜单成功";
+    String QUERY_MENU_BY_ID_SUCCESS = "通过ID查询菜单成功";
+    String UPDATE_MENU_SUCCESS = "更新菜单成功";
+    String QUERY_MENUS_SUCCESS = "查询菜单成功";
+    String MENU_IN_USE = "MENU_IN_USE";
+    String ADD_USER_SUCCESS = "添加用户成功";
+    String UPDATE_USER_SUCCESS = "修改用户成功";
+    String QUERY_USER_SUCCESS = "";
 }

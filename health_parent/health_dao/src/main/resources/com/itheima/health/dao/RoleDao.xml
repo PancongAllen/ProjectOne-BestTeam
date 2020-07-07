@@ -24,4 +24,88 @@
             <result column="tlinkUrl" property="linkUrl"/>
         </collection>
     </resultMap>
+
+
+
+    <select id="findRolesByUserId" parameterType="int" resultMap="roleMap">
+        select r.* from  t_role r,t_user_role ur where r.id = ur.role_id and ur.user_id = #{userId}
+    </select>
+    <resultMap id="roleMap" type="role">
+        <id column="id" property="id"/>
+        <collection property="permissions" column="id" select="com.itheima.health.dao.PermissionDao.findPermissionsByRoleId"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List" >
+    id, name, keyword, description
+  </sql>
+
+    <select id="selectByPrimaryKey" resultType="com.itheima.health.pojo.Role" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from t_role
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+      delete from t_role
+      where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insertSelective" parameterType="com.itheima.health.pojo.Role" >
+        <selectKey order="AFTER" resultType="int" keyProperty="id">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into t_role
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="keyword != null" >
+                keyword,
+            </if>
+            <if test="description != null" >
+                description,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="keyword != null" >
+                #{keyword,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null" >
+                #{description,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.itheima.health.pojo.Role" >
+        update t_role
+        <set >
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="keyword != null" >
+                keyword = #{keyword,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null" >
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <select id="selectByCondition" parameterType="string" resultType="com.itheima.health.pojo.Role">
+        select * from t_role
+        <if test="value != null and value.length > 0">
+            where keyword like concat('%',#{trim(value)},'%')  or name like concat('%',#{trim(value)},'%')
+        </if>
+    </select>
 </mapper>

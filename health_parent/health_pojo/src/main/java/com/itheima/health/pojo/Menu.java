@@ -18,6 +18,11 @@ public class Menu implements Serializable{
     private List<Menu> children = new ArrayList<>();//子菜单集合
     private Integer parentMenuId;//父菜单id
 
+
+    //增加的字段
+    private Integer level;//菜单级别
+
+
     public Integer getId() {
         return id;
     }
@@ -96,5 +101,13 @@ public class Menu implements Serializable{
 
     public void setParentMenuId(Integer parentMenuId) {
         this.parentMenuId = parentMenuId;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 }
