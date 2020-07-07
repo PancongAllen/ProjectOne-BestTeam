@@ -33,7 +33,7 @@ public interface MenuDao {
 
     void reName1(@Param("cid") Integer categoryId, @Param("cname") String categoryName);
 
-    @Select("select max(path) from t_menu where level =1")
+    @Select("select max(CONVERT(path,signed)) from t_menu where level =1 ")
     Integer getMaxPath();
     //获取优先权
     @Select("select count(1) from t_menu where level =2 and parentMenuId = #{categoryId}")
@@ -45,4 +45,7 @@ public interface MenuDao {
 
     @Delete("delete from t_menu where id  = #{id}")
     void deleteByPrimaryKey(Integer id);
+
+    @Select("select count(1) from t_role_menu where menu_id = #{id}")
+    int countMenuAndRole(Integer id);
 }

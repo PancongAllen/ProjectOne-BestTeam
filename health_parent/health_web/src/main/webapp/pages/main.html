@@ -230,7 +230,7 @@
                 if(res.data.flag){
                     this.menuList = res.data.data.set;
                     console.log("menuList: ", res.data.data.set);
-                    this.username = res.data.data.username;
+                    this.loginUsername = res.data.data.username;
                 }else{
                     this.$message.error(res.data.data.message);
                 }

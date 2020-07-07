@@ -78,15 +78,16 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void delete(int id) throws Exception {
-        // 根据角色id 查询角色和菜单中间表
-        List<Integer> mids = roleDao.findMenuAndRoleById(id);
-        if(mids!=null && mids.size() > 0){
-            throw  new HealthException("id被菜单外键引用,不能删除");
+        // 根据角色id 查询角色和用户中间表
+        List<Integer> count = roleDao.findUserAndRoleById(id);
+        if(count!=null && count.size() > 0){
+            throw  new HealthException("被用户引用,不能删除");
         }
         // 根据角色id 删除角色和权限中间表
         roleDao.deleteRoleAndPermission(id);
         // 根据角色id 删除角色和菜单中间表
-        roleDao.deleteRoleAndPermission(id);
+        roleDao.deleteRoleAndMenu(id);
+
         // 删除角色
         roleDao.deleteByPrimaryKey(id);
     }

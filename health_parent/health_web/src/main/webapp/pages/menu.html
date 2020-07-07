@@ -72,11 +72,11 @@
                     <div class="filter-container">
                         <el-button type="primary" class="butT" @click="handleCreate()">新增一级菜单</el-button>
                     </div>
-                    <el-row>
+                    <!--<el-row>
                         <el-col :span="4"><div class="grid-content bg-purple" ></div>序号</el-col>
                         <el-col :span="12"><div class="grid-content bg-purple-light">一级菜单</div></el-col>
                         <el-col :span="8"><div class="grid-content bg-purple"></div>操作</el-col>
-                    </el-row>
+                    </el-row>-->
 
 
                     <!--                树形结构-->
@@ -86,7 +86,7 @@
                                               @click.native="getTwoList(one.id)">
                                 <template slot="title">
                                     <div class="one-list">
-                                        <div>{{one.id}}</div>
+                                        <div>{{oneIndex+1}}</div>
                                         <div>{{one.name}}</div>
                                         <div>
                                             <el-button type="primary" plain @click.stop="handleAdd(one)">添加子类</el-button>
@@ -97,7 +97,7 @@
                                 </template>
                                 <div v-for="(two,twoIndex) in twoList" :key="twoIndex">
                                     <div class="one-list">
-                                        <div>{{two.id}}</div>
+                                        <div>{{twoIndex+1}}</div>
                                         <div>|---{{two.name}}</div>
                                         <div>
                                             <el-button type="success" @click.stop="handleReNameChild(two)">重命名</el-button>
@@ -151,7 +151,7 @@
                 //切换页码
                 handleCurrentChange(currentPage) {
                     this.pagination.currentPage = currentPage;
-                    this.findPage();
+                    this.getONneList();
                 },
                 // 删除
                 handleDelete(row) {
@@ -172,7 +172,7 @@
                             if(res.data.flag){
                                 // 成功
                                 // 刷新列表数据
-                                this.findPage();
+                                this.getONneList();
                             }
                         })
                     }).catch(() => {
@@ -228,6 +228,7 @@
                     })
                 },
                 handleAdd(one) {
+                    let id  = one.id;
                     this.$prompt('为'+'“'+one.name+'”'+'添加子菜单','添加子菜单', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
@@ -240,7 +241,7 @@
                     }).then(({value}) => {
                         axios.post("/menu/add2.do?categoryId="+one.id+"&categoryName="+value)
                             .then(res => {
-                            this.getONneList(); //页面刷新没生效??
+                            this.getTwoList(); //页面刷新没生效??
                         }).catch(err => {
                             this.$message.error(err.message)
                         })
@@ -276,7 +277,7 @@
                         },
                     }).then(({value}) => {
                         axios.post("/menu/reName1.do?categoryId="+two.id+"&categoryName="+value).then(res => {
-                            this.getONneList();
+                            this.getTwoList();
                         }).catch(err => {
                             this.$message.error(err.message)
                         })
@@ -302,6 +303,7 @@
                                 // 成功
                                 // 刷新列表数据
                                 this.getONneList();
+                                this.getTwoList();
                             }
                         })
                     }).catch(() => {

@@ -7,6 +7,7 @@ import com.itheima.health.constant.MessageConstant;
 import com.itheima.health.dao.MenuDao;
 import com.itheima.health.entity.PageResult;
 import com.itheima.health.entity.QueryPageBean;
+import com.itheima.health.exception.HealthException;
 import com.itheima.health.exception.PermissionException;
 import com.itheima.health.pojo.Menu;
 import com.itheima.health.service.MenuService;
@@ -125,11 +126,16 @@ public class MenuServiceImpl implements MenuService {
     **/
     @Override
     public void deleteById(Integer id, Integer level) {
+        //判断菜单和角色是否有关联,有则不能删除
+        int c = menuDao.countMenuAndRole(id);
+        if(c>0){
+            throw new HealthException("菜单被角色关联,不能删除");
+        }
         if(level == 1){
             //一级菜单判断是否有子菜单,有则不能删除
            int count = menuDao.getCountPriority(id);
            if(count > 0){
-               throw new RuntimeException("存在子项,不能删除!");
+               throw new HealthException("存在子项,不能删除!");
            }
         }
         //二级菜单可以直接删除
