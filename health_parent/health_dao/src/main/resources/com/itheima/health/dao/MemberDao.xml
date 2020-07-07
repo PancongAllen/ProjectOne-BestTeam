@@ -95,4 +95,25 @@
     <select id="findMemberTotalCount" resultType="int">
         select count(id) from t_member
     </select>
+
+    <select id="countBySex" resultType="map">
+        SELECT sex name,count(1) value FROM `t_member` Group By sex Order By sex desc
+    </select>
+
+    <select id="findByAge_0" resultType="int">
+        SELECT count(1) FROM t_member where ROUND(DATEDIFF(NOW(),birthday)/365) between 0 and 20
+    </select>
+
+    <select id="findByAge_1" resultType="int">
+        SELECT count(1) FROM t_member where ROUND(DATEDIFF(NOW(),birthday)/365) between 20 and 40
+    </select>
+
+    <select id="findByAge_2" resultType="int">
+        SELECT count(1) FROM t_member where ROUND(DATEDIFF(NOW(),birthday)/365) between 40 and 60
+    </select>
+
+    <select id="findByAge_3" resultType="int">
+        SELECT count(1) FROM t_member where ROUND(DATEDIFF(NOW(),birthday)/365) between 60 and 200
+    </select>
+
 </mapper>

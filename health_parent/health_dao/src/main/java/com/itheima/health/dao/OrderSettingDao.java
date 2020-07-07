@@ -43,4 +43,10 @@ public interface OrderSettingDao {
      * 更新已预约人数
      */
     void editReservationsByOrderDate(OrderSetting orderSetting);
+
+    /**
+     * 每个月的最后一天删除之前的所有预约数据
+     * @param lastDateOfMouth
+     */
+    void deleteByDate(String lastDateOfMouth);
 }

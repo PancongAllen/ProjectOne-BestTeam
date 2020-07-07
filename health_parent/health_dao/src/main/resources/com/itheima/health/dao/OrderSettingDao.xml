@@ -30,4 +30,10 @@
         where orderDate = #{orderDate} and reservations &lt; number
 
     </update>
+
+    <!--每个月的最后一天删除之前的所有预约数据-->
+    <!--void deleteByDate(String lastDateOfMouth);-->
+    <delete id="deleteByDate" parameterType="string">
+        DELETE FROM t_ordersetting WHERE orderDate &lt;{lastDateOfMouth}
+    </delete>
 </mapper>

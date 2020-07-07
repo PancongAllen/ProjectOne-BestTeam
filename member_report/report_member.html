@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- 页面meta -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>传智健康</title>
+        <meta name="description" content="传智健康">
+        <meta name="keywords" content="传智健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <!-- 引入样式 -->
+        <link rel="stylesheet" href="../css/style.css">
+        <script src="../js/vue.js"></script>
+        <!--<link rel="stylesheet" href="../css/page-health-orderInfo.css">-->
+        <script src="../plugins/echarts.js"></script>
+        <script src="../plugins/datapicker/datePicker.js"></script>
+        <link rel="icon" href="../img/asset-favico.ico">
+        <link rel="stylesheet" href="../plugins/elementui/index.css" />
+        <script src="../plugins/jquery/dist/jquery.min.js"></script>
+        <script src="../plugins/healthmobile.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+    </head>
+    <body class="hold-transition">
+        <div id="app">
+            <div class="content-header">
+                <h1>统计分析<small>会员数量</small></h1>
+                <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+                    <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                    <el-breadcrumb-item>统计分析</el-breadcrumb-item>
+                    <el-breadcrumb-item>会员数量</el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
+            <div >
+                <div class="date" align="center" style="float: left;padding-left: 270px">
+                    <label>开始日期</label>
+                    <i class="icon-date" class="picktime"></i>
+                    <input v-model="date.startDate" required="required" type="text" class="picktime" readonly>
+                </div>
+
+            <div class="date" align="center" style="float: left;padding-left: 50px">
+                <label>结束日期</label>
+                <i class="icon-date" class="picktime2"></i>
+                <input v-model="date.endDate" required="required" type="text" class="picktime2" readonly>
+            </div>
+                <div align="center" style="display: inline; padding-left: 50px;">
+                    <!--<button @click="getMemberReportByDate()" type="button" class="btn order-btn">查询</button>-->
+                    <!--<input type="button" value="查询" @click="useMethods()">-->
+                    <input type="button" value="查询" @click="useMethods()">
+                </div>
+            </div>
+
+            <div class="app-container">
+                <div class="box">
+                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+                    <div id="chart1" style="height:600px;"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- 引入组件库 -->
+
+    <script src="../js/axios-0.18.0.js"></script>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        // var myChart1 = echarts.init(document.getElementById('chart1'));
+        // 使用刚指定的配置项和数据显示图表。
+        //myChart.setOption(option);
+        var vue=new Vue({
+            el:'#app',
+            data:{
+                date:{
+                  startDate:'',
+                  endDate:''
+                },
+                myecharts: '', //实例
+                option:{
+                    title: {
+                        text: '会员数量'
+                    },
+                    tooltip: {},
+                    legend: {
+                        data: ['会员数量']
+                    },
+                    xAxis: {
+                        data:[]
+                        // data: res.data.data.months
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        name: '会员数量',
+                        type: 'line',
+                        data: []
+                        // data: res.data.data.memberCount
+                    }]
+                },
+            },
+            mounted(){
+                this.myecharts = echarts.init(document.getElementById('chart1'));
+                axios.get("/report/getMemberReport.do").then((res)=>{
+                    if(res.data.flag) {
+                        this.option.xAxis.data=res.data.data.months;
+                        this.option.series[0].data=res.data.data.memberCount;
+                        this.myecharts.setOption(this.option);
+                    }else{
+                         this.$message.error(res.data.message);
+                        //alert(res.data.message);
+                    }
+                });
+            },
+            methods:{
+                getMemberReportByDate(){
+                    //alert("html");
+                    axios.post("/report/getMemberReportByDate.do",this.date).then((res)=>{
+                        if(res.data.flag) {
+                            this.option.xAxis.data=res.data.data.months;
+                            this.option.series[0].data=res.data.data.memberCount;
+                            this.myecharts.setOption(this.option);
+                        }else{
+                            this.$message.error(res.data.message);
+                            //alert(res.data.message);
+                        }
+                    });
+                },
+                //验证是否选择时间
+                ifselecTime(){
+                    //alert(this.date.startDate);
+                    var startDate=this.date.startDate;
+                    var endDate=this.date.endDate;
+                    var sDate=new Date(startDate);
+                    var eDate=new Date(endDate);
+                    if(startDate=='' || endDate==''){
+                        this.$message.error("开始或结束时间为空,请重新选择!!");
+                        return false;
+                    }
+                    if(startDate>endDate||startDate==endDate){
+                        //this.$message.error("error");
+                        this.$message.error("开始时间大于结束时间or开始时间与结束时间相同,请重新选择!!")
+                        return false;
+                    }
+
+                    return true;
+                },
+                //联合调用上面连个方法
+                useMethods(){
+                    var flag=this.ifselecTime();
+                    if(flag==false){
+                        return false;
+                    }else{
+                        this.getMemberReportByDate();
+                    }
+                }
+                },
+
+        })
+    </script>
+    <script>
+        //日期控件
+        var calendar = new datePicker();
+        calendar.init({
+            'trigger': '.picktime',/*按钮选择器，用于触发弹出插件*/
+            'type': 'ym',/*模式：date日期；datetime日期时间；time时间；ym年月；*/
+            'minDate': '1900-1-1',/*最小日期*/
+            'maxDate': getToday(),/*最大日期*/
+            'onSubmit': function() { /*确认时触发事件*/
+                //var theSelectData = calendar.value;
+            },
+            'onClose': function() { /*取消时触发事件*/ }
+        });
+        var calendar2 = new datePicker();
+        calendar2.init({
+            'trigger': '.picktime2',/*按钮选择器，用于触发弹出插件*/
+            'type': 'ym',/*模式：date日期；datetime日期时间；time时间；ym年月；*/
+            'minDate':'1900-1-1',/*最小日期*/
+            //'minDate':date,/*最小日期*/
+            'maxDate':getToday(),/*最大日期*/
+            'onSubmit': function() { /*确认时触发事件*/
+                //var theSelectData = calendar.value;
+            },
+            'onClose': function() { /*取消时触发事件*/ }
+        });
+    </script>
+</html>
