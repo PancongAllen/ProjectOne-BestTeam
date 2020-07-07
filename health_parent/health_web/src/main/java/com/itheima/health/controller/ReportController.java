@@ -3,9 +3,11 @@ package com.itheima.health.controller;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.itheima.health.constant.MessageConstant;
 import com.itheima.health.entity.Result;
+import com.itheima.health.exception.HealthException;
 import com.itheima.health.service.MemberService;
 import com.itheima.health.service.ReportService;
 import com.itheima.health.service.SetmealService;
+import com.sun.xml.internal.ws.handler.HandlerException;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -13,9 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jxls.common.Context;
 import org.jxls.transform.poi.PoiContext;
 import org.jxls.util.JxlsHelper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -77,6 +78,59 @@ public class ReportController {
         // 再返回给前端
         return new Result(true, MessageConstant.GET_MEMBER_NUMBER_REPORT_SUCCESS,resultMap);
     }
+
+
+    @PostMapping("/getMemberReportByDate")
+    public Result getMemberReportByDate(@RequestBody Map<String,String> dateMap) {
+        SimpleDateFormat sdf = null;
+        Date startDate= null;
+        int num= 0;
+        try {
+            //dateMap为空则会报错
+            //创建格式转换字符串为Date类型
+            sdf = new SimpleDateFormat("yyyy-MM");
+            //计算指定两个时间的月份差值
+            Calendar start = Calendar.getInstance();
+            Calendar end = Calendar.getInstance();
+            startDate = sdf.parse(dateMap.get("startDate"));
+            Date endDate=sdf.parse(dateMap.get("endDate"));
+            start.setTime(startDate);
+            end.setTime(endDate);
+            int result = end.get(Calendar.MONTH) - start.get(Calendar.MONTH);
+            int month = (end.get(Calendar.YEAR) - start.get(Calendar.YEAR)) * 12;
+            num = result+month;
+        } catch (ParseException e) {
+            //dateMap为空抛出错误
+            throw new HandlerException(e);
+        }
+        // 组装指定时间段的数据, 前端是一个数组
+        List<String> months = new ArrayList<String>();
+
+        //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        // 使用java中的calendar来操作日期, 日历对象
+        Calendar calendar = Calendar.getInstance();
+        //设置指定的起始时间
+        calendar.setTime(startDate);
+        // 构建时间段内每个月的数据
+        for (int i = 0; i < num; i++) {
+            // 每次增加一个月就
+            calendar.add(Calendar.MONTH, 1);
+            // 过去的日期, 设置好的日期
+            Date date = calendar.getTime();
+            // 2020-06 前端只展示年-月
+            months.add(sdf.format(date));
+        }
+        // 调用服务查询时间段内每个月会员数据 前端也是一数组 数值
+        List<Integer> memberCount =memberService.getMemberReport(months);
+        // 放入map
+        Map<String,Object> resultMap = new HashMap<String,Object>();
+        resultMap.put("months",months);
+        resultMap.put("memberCount",memberCount);
+        // 再返回给前端
+        return new Result(true, MessageConstant.GET_MEMBER_NUMBER_REPORT_SUCCESS,resultMap);
+    }
+
+
 
     /**
      * 套餐预约占比
@@ -237,23 +291,5 @@ public class ReportController {
             e.printStackTrace();
         }
         return new Result(false,"导出运营数据统计pdf失败");
-    }
-
-    /**
-     * 按性别获取会员比例
-     */
-    @RequestMapping("/getMemberReportBySex")
-    public Result getMemberReportBySex(){
-        Map<String, Object> resultMap = memberService.getMemberReportBySex();
-        return new Result(true,"获取数据成功",resultMap);
-    }
-
-    /**
-     * 根据年龄段获取会员比例
-     */
-    @RequestMapping("/getMemberReportByAge")
-    public Result getMemberReportByAge(){
-        Map<String, Object> resultMap = memberService.getMemberReportByAge();
-        return new Result(true,"获取数据成功",resultMap);
     }
 }
